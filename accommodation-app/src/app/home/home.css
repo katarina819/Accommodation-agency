@@ -1,0 +1,67 @@
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.speech-bubble {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 20px;
+  background: #f0f0f0;
+  font-size: 1.2rem;
+  max-width: 400px;
+  text-align: center;
+}
+
+button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #1976d2;
+  color: white;
+  cursor: pointer;
+}
+
+/* Animacija cijelog tijela (blago ljuljanje) */
+#character {
+  width: 150px;
+  animation: bounce 1.5s infinite alternate;
+  transform-origin: center bottom;
+}
+
+/* Animacija ruku */
+#left-arm, #right-arm {
+  transform-origin: top center;
+  animation: wave 2s infinite alternate;
+}
+
+#right-arm {
+  animation-delay: 1s;
+}
+
+/* Animacija nogu (blago ljuljanje) */
+#left-leg, #right-leg {
+  transform-origin: top center;
+  animation: kick 2s infinite alternate;
+}
+
+@keyframes wave {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(30deg); }
+}
+
+@keyframes kick {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-5px); }
+}
+
+/* Animacija usta (osmijeh) - CSS ne podržava direktno morph path, treba GSAP */

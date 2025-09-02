@@ -1,0 +1,31 @@
+<div class="home-container">
+  <!-- SVG animacija -->
+  <svg id="character" width="150" height="150" viewBox="0 0 100 100">
+    <!-- Tijelo -->
+    <circle cx="50" cy="50" r="30" fill="#f0c" />
+    
+    <!-- Lijeva ruka -->
+    <rect id="left-arm" x="10" y="40" width="10" height="40" fill="#f0c" />
+    
+    <!-- Desna ruka -->
+    <rect id="right-arm" x="80" y="40" width="10" height="40" fill="#f0c" />
+    
+    <!-- Oči -->
+    <circle cx="40" cy="40" r="5" fill="#000" />
+    <circle cx="60" cy="40" r="5" fill="#000" />
+    
+    <!-- Usta -->
+    <path id="mouth" d="M30,70 Q50,70 70,70" stroke="#000" fill="transparent" stroke-width="2" />
+  </svg>
+
+  <!-- Speech bubble -->
+  <div class="speech-bubble">
+    <p>{{ currentMessage.text }}</p>
+  </div>
+
+  <!-- Next button -->
+  <button (click)="nextMessage()">▶ Next</button>
+
+  <!-- FBX 3D canvas -->
+  <div #canvasContainer style="width: 800px; height: 600px;"></div>
+</div>
