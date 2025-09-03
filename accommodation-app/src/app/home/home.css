@@ -2,13 +2,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
+  padding-top: 40px; /* malo spuštanje od vrha stranice */
 }
 
 .speech-bubble {
-  margin-top: 20px;
-  padding: 15px;
+  margin-bottom: 10px;
+  padding: 15px 20px;
   border-radius: 20px;
   background: #f0f0f0;
   font-size: 1.2rem;
@@ -16,8 +15,9 @@
   text-align: center;
 }
 
+
 button {
-  margin-top: 15px;
+  margin-bottom: 20px; /* razmak iznad canvasa */
   padding: 10px 20px;
   border: none;
   border-radius: 12px;
@@ -25,6 +25,8 @@ button {
   color: white;
   cursor: pointer;
 }
+
+
 
 /* Animacija cijelog tijela (blago ljuljanje) */
 /* #character {
@@ -65,3 +67,17 @@ button {
 }
 
 /* Animacija usta (osmijeh) - CSS ne podržava direktno morph path, treba GSAP */
+
+#canvasContainer {
+  margin-top: 20px;
+  width: 800px;
+  height: 600px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+button:hover {
+  background: #125ca1;
+  transform: scale(1.05);
+  transition: 0.2s ease;
+}

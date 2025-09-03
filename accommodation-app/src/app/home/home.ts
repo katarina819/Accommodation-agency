@@ -68,108 +68,168 @@ export class HomeComponent implements AfterViewInit {
   } 
  
   initThree() {
-    const container = this.canvasContainer.nativeElement;
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xaaaaaa);
+  const container = this.canvasContainer.nativeElement;
 
-    // 🔹 Axes i Grid za debugging
-    const axesHelper = new THREE.AxesHelper(50);
-    scene.add(axesHelper);
+  // 🔹 Scene
+  const scene = new THREE.Scene();
+  scene.background = null;
 
-    const gridHelper = new THREE.GridHelper(400, 20);
-    scene.add(gridHelper);
+  // 🔹 Kamera (pogled na modele ispod dugmeta)
+  const camera = new THREE.PerspectiveCamera(
+    45,
+    container.clientWidth / container.clientHeight,
+    0.1,
+    5000
+  );
+  camera.position.set(0, 120, 400); // prilagođeno da modeli budu ispod Next dugmeta
+  camera.lookAt(0, 50, 0);
 
-    // 🔹 Kamera udaljena od scene
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      container.clientWidth / container.clientHeight,
-      0.1,
-      2000
-    );
-    camera.position.set(0, 150, 300);
-    camera.lookAt(0, 0, 0);
+  // 🔹 Renderer
+  this.renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: true,
+    powerPreference: 'high-performance',
+    precision: 'highp'
+  });
+  this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+  this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  this.renderer.toneMappingExposure = 1.2;
+  this.renderer.setSize(container.clientWidth, container.clientHeight);
+  this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+  container.appendChild(this.renderer.domElement);
 
-    // 🔹 Renderer
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-      precision: 'highp'
-    });
+  // 🔹 Responsive resize
+  window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
     this.renderer.setSize(container.clientWidth, container.clientHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
-    container.appendChild(this.renderer.domElement);
+  });
 
-    this.renderer.domElement.addEventListener('webglcontextlost', (event) => {
-      event.preventDefault();
-      console.warn('WebGL context lost!');
-    }, false);
+  // 🔹 Lights
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+  directionalLight.position.set(0, 300, 200);
+  directionalLight.castShadow = true;
+  scene.add(directionalLight);
 
-    // 🔹 Svjetla
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(0, 200, 100);
-    scene.add(directionalLight);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+  scene.add(ambientLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040);
-    scene.add(ambientLight);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+  hemiLight.position.set(0, 300, 0);
+  scene.add(hemiLight);
 
-    // 🔹 Animacijski mikseri i clock
-    const mixers: THREE.AnimationMixer[] = [];
-    const clock = new THREE.Clock();
-    const loader = new GLTFLoader();
+  // 🔹 Animation mixers
+  const mixers: THREE.AnimationMixer[] = [];
+  const clock = new THREE.Clock();
+  const loader = new GLTFLoader();
 
-    // 🔹 Funkcija za učitavanje modela
-    const loadModel = (path: string, position: THREE.Vector3) => {
-      loader.load(path, (gltf: GLTF) => {
-  const object = gltf.scene;
+  // 🔹 Sigurna funkcija za učitavanje modela
+  const loadModel = (path: string, position: THREE.Vector3) => {
+    loader.load(
+      path,
+      (gltf: GLTF) => {
+        const object = gltf.scene;
 
-  // 🔹 Skaliranje modela
-  object.scale.set(50, 50, 50);
+        // Skaliranje prema max dimenziji
+        const box = new THREE.Box3().setFromObject(object);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scaleFactor = 200 / maxDim;
+        object.scale.setScalar(scaleFactor);
 
-  // 🔹 Centriranje i podizanje na tlo
-  const box = new THREE.Box3().setFromObject(object);
-  const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
-  object.position.sub(center);
-  object.position.y += size.y / 2;
-  object.position.add(position);
+        // Centriranje
+        const newBox = new THREE.Box3().setFromObject(object);
+        const center = newBox.getCenter(new THREE.Vector3());
+        const sizeAfter = newBox.getSize(new THREE.Vector3());
+        object.position.sub(center);
 
-  scene.add(object);
+        // Pozicija ispod dugmeta
+        object.position.y += sizeAfter.y / 2 - 20;
+        object.position.add(position);
 
-  // 🔹 Konzolni log za debug
-  console.log(`Model: ${path}`);
-  console.log('Center:', center);
-  console.log('Size:', size);
-  console.log('Position after centering and offset:', object.position);
+        // 🔹 Sigurno zamijeni materijale ako teksture ne učitava
+        object.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+    
+        // Ako materijal nema teksturu, zadrži originalnu boju
+        if (!(mesh.material as any).map) {
+          const oldMat = mesh.material as THREE.MeshStandardMaterial;
+          mesh.material = new THREE.MeshStandardMaterial({
+            color: oldMat.color ? oldMat.color : 0xaaaaaa,
+            metalness: oldMat.metalness ?? 0.5,
+            roughness: oldMat.roughness ?? 0.5
+          });
+        }
 
-  // 🔹 Animacije
-  if (gltf.animations.length > 0) {
-    const mixer = new THREE.AnimationMixer(object);
-    gltf.animations.forEach((clip) => {
-      const action = mixer.clipAction(clip);
-      action.reset();
-      action.setLoop(THREE.LoopRepeat, Infinity);
-      action.play();
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      }
+    // 🔹 Dodatak za SkinnedMesh (sprječava nestajanje ruku)
+        if ((child as THREE.SkinnedMesh).isSkinnedMesh) {
+          const skinnedMesh = child as THREE.SkinnedMesh;
+          skinnedMesh.frustumCulled = false; // uvijek renderiraj ruke
+        }
+      });
+
+
+        scene.add(object);
+
+        // Animacije
+        if (gltf.animations.length > 0) {
+          const mixer = new THREE.AnimationMixer(object);
+          gltf.animations.forEach((clip) => {
+            const action = mixer.clipAction(clip);
+            action.reset();
+            action.setLoop(THREE.LoopRepeat, Infinity);
+            action.play();
+          });
+          mixers.push(mixer);
+        }
+
+        console.log(`Loaded model: ${path}`, object.position);
+      },
+      undefined,
+      (error) => {
+        console.error('GLTF load error:', error);
+      }
+    );
+  };
+
+  // 🔹 Učitaj modele
+  loadModel('assets/swing_dancing.glb', new THREE.Vector3(-100, 0, 0));
+  loadModel('assets/waving.glb', new THREE.Vector3(100, 0, 0));
+
+  // 🔹 Animacijska petlja
+const animate = () => {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+
+  mixers.forEach((mixer) => {
+    mixer.update(delta);
+
+    // Traverse kroz sve child objekte root-a mixer-a
+    const root = mixer.getRoot();
+    if (root instanceof THREE.Object3D) {
+    root.traverse((child: THREE.Object3D) => {
+      if ((child as THREE.SkinnedMesh).isSkinnedMesh) {
+        const skinned = child as THREE.SkinnedMesh;
+        skinned.frustumCulled = false;
+        skinned.geometry.computeBoundingBox();
+        skinned.geometry.computeBoundingSphere();
+      }
     });
-    mixers.push(mixer);
-  }
-});
+    }})
 
-    };
+  this.renderer.render(scene, camera);
+};
 
-    // 🔹 Učitaj modele
-    loadModel('assets/swing_dancing.glb', new THREE.Vector3(0, 0, 0));
-    loadModel('assets/waving.glb', new THREE.Vector3(50, 0, 0)); // bliže centru
 
-    // 🔹 Animacijska petlja
-    const animate = () => {
-      requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      mixers.forEach((mixer) => mixer.update(delta));
-      this.renderer.render(scene, camera);
-    };
-    animate();
-  }
+  animate();
+}
+
 
   ngOnDestroy() {
     if (this.renderer) {
