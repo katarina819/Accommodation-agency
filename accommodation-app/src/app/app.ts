@@ -1,13 +1,11 @@
-import { Component, signal } from '@angular/core';
-import { HomeComponent } from './home/home';
+// src/app/app.ts
+import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  standalone: true,      // potrebno za standalone komponentu
-  imports: [HomeComponent],
-  template: `<app-home></app-home>`,
-  styleUrls: ['./app.css']
+  standalone: true,
+  imports: [RouterModule],
+  template: `<router-outlet></router-outlet>`
 })
-export class App {
-  protected readonly title = signal('accommodation-app');
-}
+export class App {}

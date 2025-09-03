@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { NgIf } from '@angular/common';
+import { Router } from '@angular/router';
 // import { LottieComponent, provideLottieOptions, AnimationOptions } from 'ngx-lottie';
 // import { gsap } from 'gsap';
 // import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
@@ -13,7 +14,8 @@ import { NgIf } from '@angular/common';
   selector: 'app-home',
   standalone: true,
   templateUrl: './home.html',
-  styleUrls: ['./home.css']
+  styleUrls: ['./home.css'],
+  imports: [NgIf]
 })
 export class HomeComponent implements AfterViewInit {
 
@@ -34,7 +36,7 @@ export class HomeComponent implements AfterViewInit {
 
   currentIndex = 0;
 
-  constructor(private el: ElementRef) {}
+  constructor(private el: ElementRef, private router: Router) {}
 
   get currentMessage() {
     return this.messages[this.currentIndex];
@@ -44,6 +46,14 @@ export class HomeComponent implements AfterViewInit {
     if (this.currentIndex < this.messages.length - 1) {
       this.currentIndex++;
     }
+  }
+
+  isLastMessage(): boolean {
+    return this.currentIndex === this.messages.length - 1;
+  }
+
+  goToMeetUs() {
+    this.router.navigate(['/meet-us']);  // vodi na novu stranicu
   }
 
   ngAfterViewInit() {
