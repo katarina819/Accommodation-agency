@@ -27,14 +27,14 @@ button {
 }
 
 /* Animacija cijelog tijela (blago ljuljanje) */
-#character {
+/* #character {
   width: 150px;
   animation: bounce 1.5s infinite alternate;
   transform-origin: center bottom;
 }
-
+ */
 /* Animacija ruku */
-#left-arm, #right-arm {
+/* #left-arm, #right-arm {
   transform-origin: top center;
   animation: wave 2s infinite alternate;
 }
@@ -42,12 +42,12 @@ button {
 #right-arm {
   animation-delay: 1s;
 }
-
+ */
 /* Animacija nogu (blago ljuljanje) */
-#left-leg, #right-leg {
+/* #left-leg, #right-leg {
   transform-origin: top center;
   animation: kick 2s infinite alternate;
-}
+} */
 
 @keyframes wave {
   0% { transform: rotate(0deg); }

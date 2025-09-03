@@ -8,7 +8,7 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
   styles: [`
     .fbx-container {
       width: 100%;
-      height: 500px;
+      height: 600px;
     }
   `]
 })
@@ -40,29 +40,41 @@ export class FbxViewerComponent implements AfterViewInit {
     light.position.set(0, 10, 10);
     scene.add(light);
 
-    const ambientLight = new THREE.AmbientLight(0x404040); // mekano svjetlo
+    const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
 
-    // 3️⃣ Loader FBX modela
+    // 3️⃣ Mixeri i clock (GLOBALNO)
+    const mixers: THREE.AnimationMixer[] = [];
+    const clock = new THREE.Clock();
+
+    // 4️⃣ Funkcija za učitavanje modela
     const loader = new FBXLoader();
-    loader.load('assets/Swing Dancing.fbx', (object) => {
-      scene.add(object);
+    const loadModel = (path: string, position: THREE.Vector3) => {
+      loader.load(path, (object) => {
+        object.position.copy(position);
+        scene.add(object);
 
-      // Animacija
-      if (object.animations && object.animations.length) {
-        const mixer = new THREE.AnimationMixer(object);
-        object.animations.forEach((clip) => mixer.clipAction(clip).play());
+        if (object.animations && object.animations.length) {
+          const mixer = new THREE.AnimationMixer(object);
+          object.animations.forEach((clip) => mixer.clipAction(clip).play());
+          mixers.push(mixer);
+        }
+      });
+    };
 
-        const clock = new THREE.Clock();
-        const animate = () => {
-          requestAnimationFrame(animate);
-          mixer.update(clock.getDelta());
-          renderer.render(scene, camera);
-        };
-        animate();
-      } else {
-        renderer.render(scene, camera);
-      }
-    });
+    // Učitaj oba modela
+    loadModel('assets/Swing Dancing.fbx', new THREE.Vector3(0, 0, 0));
+    loadModel('assets/waving.fbx', new THREE.Vector3(200, 0, 0));
+
+    // 5️⃣ Jedna globalna petlja animacije
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+      mixers.forEach((mixer) => mixer.update(delta));
+
+      renderer.render(scene, camera);
+    };
+    animate();
   }
 }

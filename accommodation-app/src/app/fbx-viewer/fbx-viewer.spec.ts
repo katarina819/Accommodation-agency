@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FbxViewerComponent } from './fbx-viewer';
 
-import { FbxViewer } from './fbx-viewer';
-
-describe('FbxViewer', () => {
-  let component: FbxViewer;
-  let fixture: ComponentFixture<FbxViewer>;
+describe('FbxViewerComponent', () => {
+  let component: FbxViewerComponent;
+  let fixture: ComponentFixture<FbxViewerComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FbxViewer]
+      imports: [FbxViewerComponent] // standalone component
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(FbxViewer);
+    fixture = TestBed.createComponent(FbxViewerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
