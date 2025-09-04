@@ -8,6 +8,8 @@
 <!-- Dugme Next ili Meet us! -->
   <button *ngIf="!isLastMessage()" (click)="nextMessage()">▶ Next</button>
   <button *ngIf="isLastMessage()" (click)="goToMeetUs()">✨ Meet us!</button>
+  
+
 
   <!-- 3D canvas -->
   <div #canvasContainer style="width: 800px; height: 600px;"></div>

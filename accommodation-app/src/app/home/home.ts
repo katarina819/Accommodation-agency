@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 // import { LottieComponent, provideLottieOptions, AnimationOptions } from 'ngx-lottie';
 // import { gsap } from 'gsap';
 // import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
-
+import { RouterModule } from '@angular/router';
 // gsap.registerPlugin(MorphSVGPlugin);
 
 @Component({
@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
   standalone: true,
   templateUrl: './home.html',
   styleUrls: ['./home.css'],
-  imports: [NgIf]
+  imports: [NgIf, RouterModule],
 })
 export class HomeComponent implements AfterViewInit {
 

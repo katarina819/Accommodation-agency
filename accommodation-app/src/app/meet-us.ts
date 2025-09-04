@@ -23,7 +23,7 @@ import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
           The agency was founded in 2025 in Osijek. Our goal is to help you find accommodation within the desired time frame.
         </p>
         <p class="fade-in delay-1">
-          Therefore, if you need to find accommodation, feel free to contact us and we will find you several offers
+          Therefore, if you need to find accommodation, feel free to <strong>contact</strong> us and we will find you several offers
           and you will decide which offer suits you best. So far, we have over 50 satisfied users, and the number of satisfied users
           is growing day by day.
         </p>
@@ -36,8 +36,9 @@ import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
           where you will find out in detail the procedure of our work. We look forward to meeting new users and providing
           them with our maximum service.
         </p>
-
+        <div class="buttons-wrapper">
         <button class="back-button" (click)="goBack()">← Back</button>
+        <button class="how-button" [routerLink]="['/work']">How we work</button>
       </div>
     </div>
   `,
@@ -55,17 +56,24 @@ import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
     .model-container {
       flex: 1 1 400px;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      justify-content: flex-start;
+      align-items: flex-start;
     }
 
    .canvas-container {
       width: 500px;   /* povećaj dimenzije canvasa */
-      height: 500px;
+      aspect-ratio: 1/1; /* kvadrat, ali rasteže se automatski */
+      height: auto;
       margin: 0;      /* makni marginu */
       padding: 0;     /* makni padding */
       border: none;   /* makni okvir */
       background: transparent; /* nema pozadine */
+    }
+
+    .canvas-container canvas {
+      display: block;
+      margin-top: 0;   /* da nema default margine */
+      vertical-align: top; /* osigurava da bude na vrhu */
     }
 
 
@@ -75,25 +83,64 @@ import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
       line-height: 1.8;
       color: #333;
       max-width: 500px;
+      align-self: flex-start; /* diže ga gore u wrapperu */
+      padding-top: 0;      /* fino pomakne prema gore */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+      .text-container {
+    text-align: left;
+  }
+    .text-container strong {
+      color: #2980b9;
     }
 
-    h1 { font-size: 42px; color: #2c3e50; margin-bottom: 20px; }
+
+    h1 { font-size: 42px; color: #2c3e50; margin-bottom: 20px; margin-top: -10px; }
     p { font-size: 18px; margin-bottom: 20px; }
     strong { color: #2980b9; }
 
-    .back-button {
-      margin-top: 30px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #2980b9;
-      color: #fff;
-      border:none;
-      border-radius:8px;
-      cursor:pointer;
-      transition: 0.3s;
-    }
+    .buttons-wrapper {
+  display: flex;
+  justify-content: space-between; /* Back desno, How left */
+  gap: 10px; /* razmak između dugmadi */
+  margin-top: 30px; /* isto kao kod Back dugmeta */
+  width: 100%; /* koristi punu širinu text-container */
+}
 
-    .back-button:hover { background-color: #1c5980; transform: translateY(-2px); }
+.how-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #27ae60; /* zelena boja za primjer */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.how-button:hover {
+  background-color: #1e874b;
+  transform: translateY(-2px);
+}
+
+.back-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #2980b9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.back-button:hover {
+  background-color: #1c5980;
+  transform: translateY(-2px);
+}
+
 
     .fade-in { opacity: 0; transform: translateY(20px); animation: fadeInUp 1s forwards; }
     .fade-in.delay-1 { animation-delay: 0.5s; }
@@ -132,13 +179,32 @@ export class MeetUsComponent implements AfterViewInit {
   this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   this.renderer.setSize(container.clientWidth, container.clientHeight);
   this.renderer.setClearColor(0x000000, 0); // transparent background
+
+  this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+  this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  this.renderer.toneMappingExposure = 2.0; // podešava svjetlinu i kontrast
+
   container.appendChild(this.renderer.domElement);
 
-  const ambient = new THREE.AmbientLight(0xffffff, 1);
+  const ambient = new THREE.AmbientLight(0xffffff, 1.5);
   scene.add(ambient);
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 2);
   dirLight.position.set(5, 10, 7.5);
+  dirLight.castShadow = true;
   scene.add(dirLight);
+
+  // Hemisphere light (svjetlo odozgo/dolje)
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+  hemiLight.position.set(0, 20, 0);
+  scene.add(hemiLight);
+
+  // Point light (žarulja koja osvjetljava izbliza)
+  const pointLight = new THREE.PointLight(0xffffff, 1.2, 100);
+  pointLight.position.set(0, 5, 5);
+  scene.add(pointLight);
+
+  this.renderer.shadowMap.enabled = true;
+  this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const loader = new GLTFLoader();
   const mixers: THREE.AnimationMixer[] = [];
@@ -146,7 +212,7 @@ export class MeetUsComponent implements AfterViewInit {
 
   loader.load('assets/standing.glb', (gltf: GLTF) => {
   const model = gltf.scene;
-  model.scale.set(2, 2, 2);
+  model.scale.set(2.5, 2.5, 2.5);
   model.position.set(0, -1, 0);
 
   model.traverse((o: any) => {
@@ -159,7 +225,7 @@ export class MeetUsComponent implements AfterViewInit {
 
   // Bounding box
   const bbox = new THREE.Box3().setFromObject(model);
-  const boxHelper = new THREE.Box3Helper(bbox, 0xff0000); // crveni okvir
+  const boxHelper = new THREE.BoxHelper(model, 0xff0000);
   scene.add(boxHelper);
 
   // Animacije
@@ -175,9 +241,10 @@ export class MeetUsComponent implements AfterViewInit {
 
   // Animacija rendera
   const animate = () => {
-    requestAnimationFrame(animate);
-    const delta = clock.getDelta();
-    mixers.forEach(m => m.update(delta));
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+  mixers.forEach(m => m.update(delta));
+  boxHelper.update();
 
     // Update bounding box za animacije
     bbox.setFromObject(model);
